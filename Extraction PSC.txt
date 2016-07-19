@@ -1,0 +1,31 @@
+BEGIN
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED 
+
+SELECT distinct  
+      [CapsReportingDB].[dbo].[View_CDD].[CAPS_WKF_reference]
+      ,[CapsReportingDB].[dbo].View_DIXIT.CAPS_DIXIT_customerNumber
+      ,[CAPS_CDD_creationDate]
+      ,[CAPS_CDD_originatorName]
+      ,[CAPS_CDD_originatorFirstName]
+      ,[CAPS_CDD_originatorLocation]
+      ,[CAPS_CDD_originatorTel]
+      ,[CAPS_CDD_originatorBL]
+      ,[CAPS_CDD_mainRelName]
+      ,[CAPS_CDD_mainRelFirstName]
+      ,[CapsReportingDB].[dbo].View_Workflow.[CAPS_WKF_currentStep]
+      ,[CapsReportingDB].[dbo].[View_Initiation].CAPS_Initiation_managerBusinessLineManager
+      ,[CapsReportingDB].[dbo].[View_Initiation].CAPS_Initiation_managerSalesManager
+  FROM [CapsReportingDB].[dbo].[View_CDD]
+  Inner join (
+  SELECT 
+  [CapsReportingDB].[dbo].[View_CDD].[CAPS_WKF_reference],MAX([CAPS_CDD_creationDate])AS maxDate
+  FROM [CapsReportingDB].[dbo].[View_CDD]
+  GROUP BY [CapsReportingDB].[dbo].[View_CDD].[CAPS_WKF_reference]
+ 
+  ) GroupA on [CapsReportingDB].[dbo].[View_CDD].CAPS_WKF_reference = GroupA.CAPS_WKF_reference and [CapsReportingDB].[dbo].[View_CDD].CAPS_CDD_creationDate = GroupA.maxDate
+  inner join [CapsReportingDB].[dbo].[View_Initiation] on [CapsReportingDB].[dbo].[View_CDD].[CAPS_WKF_reference]= [CapsReportingDB].[dbo].[View_Initiation].CAPS_WKF_reference
+  inner join [CapsReportingDB].[dbo].View_Workflow on [CapsReportingDB].[dbo].View_Workflow.[CAPS_WKF_reference] =  [CapsReportingDB].[dbo].[View_CDD].[CAPS_WKF_reference]
+  inner join [CapsReportingDB].[dbo].View_DIXIT on [CapsReportingDB].[dbo].View_DIXIT.CAPS_DIXIT_mnemonic = [CapsReportingDB].[dbo].View_Workflow.CAPS_WKF_mnemonic
+order by [CAPS_CDD_originatorName]
+
+END
